@@ -1,41 +1,41 @@
 <?php
 include('conexao.php');
 
-if(isset($_POST['email']) || isset($_POST['senha'])){
-
-    if(strlen($_POST['email']) == 0){
-        alert("Preencha seu Email");
-    } else if(strlen($_POST['senha']) == 0){
-        alert("Preencha sua Senha");
+if (isset($_POST['email']) && isset($_POST['senha'])) {
+    if (empty($_POST['email'])) {
+        echo "Preencha seu Email";
+    } elseif (empty($_POST['senha'])) {
+        echo "Preencha sua Senha";
     } else {
-
         $email = $mysqli->real_escape_string($_POST['email']);
         $senha = $mysqli->real_escape_string($_POST['senha']);
 
+        // Verifica no banco de dados
         $sql_code = "SELECT * FROM usuários WHERE email = '$email' AND senha = '$senha'";
-        $sql_query = $mysqli->query($sql_code) or die("Falha ao pegar os dados: " . $mysqli->error);
+        $sql_query = $mysqli->query($sql_code) or die("Falha ao buscar os dados: " . $mysqli->error);
 
-        $quantidade = $sql_query->num_rows;
-
-        if($quantidade == 1) {
-
+        if ($sql_query->num_rows == 1) {
             $usuario = $sql_query->fetch_assoc();
 
-            if(!isset($_SESSION)) {
+            if (!isset($_SESSION)) {
                 session_start();
             }
 
             $_SESSION['id'] = $usuario['id'];
             $_SESSION['nome'] = $usuario['nome'];
+            $_SESSION['tipo'] = $usuario['tipo'];
 
-            header("Location: admin.php");
-
+            // Redirecionamento baseado no tipo
+            if ($usuario['tipo'] == 'admin') {
+                header("Location: admin.php");
+            } else {
+                header("Location: usuario.php");
+            }
+            exit();
         } else {
             echo "Falha ao logar, Email ou Senha incorretos";
         }
-
     }
-
 }
 ?>
 
@@ -73,23 +73,24 @@ if(isset($_POST['email']) || isset($_POST['senha'])){
                         <a href="#" class="social-icon"><i class='bi bi-linkedin' ></i></a>
                     </div>
                 </form>
-                <form action="" class="sign-up-form" method="POST">
+                <form action="registro.php" class="sign-up-form" method="POST">
                     <h2 class="title">Sign up</h2>
                     <div class="input-field">
                         <i class="fas fa-user"></i>
-                        <input type="text" name="username_signup" placeholder="Username" />
+                        <input type="text" name="username_signup" placeholder="Username" required />
                     </div>
                     <div class="input-field">
                         <i class="fas fa-envelope"></i>
-                        <input type="email" name="email_signup" placeholder="Email" />
+                        <input type="email" name="email_signup" placeholder="Email" required />
                     </div>
                     <div class="input-field password-container">
                         <i class="fas fa-lock"></i>
-                        <input type="password" name="password_signup" id="password-signup" placeholder="Password" />
-                        <span class="toggle-password" onclick="togglePassword('password-signup')"><i class="bi bi-eye"></i></span>
+                        <input type="password" name="password_signup" id="password-signup" placeholder="Password" required />
+                        <span class="toggle-password" onclick="togglePassword('password-signup')">
+                            <i class="bi bi-eye"></i>
+                        </span>
                     </div>
                     <input type="submit" class="btn" value="Sign up" />
-                    <p class="social-text">Or Sign up with social platforms</p>
                     <div class="social-media">
                         <a href="#" class="social-icon"><i class="bi bi-facebook"></i></a>
                         <a href="#" class="social-icon"><i class="bi bi-twitter"></i></a>
